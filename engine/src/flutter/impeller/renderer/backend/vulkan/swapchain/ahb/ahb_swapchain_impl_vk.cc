@@ -4,6 +4,7 @@
 
 #include "impeller/renderer/backend/vulkan/swapchain/ahb/ahb_swapchain_impl_vk.h"
 
+#include "fml/logging.h"
 #include "impeller/base/validation.h"
 #include "impeller/renderer/backend/vulkan/command_buffer_vk.h"
 #include "impeller/renderer/backend/vulkan/swapchain/ahb/ahb_formats.h"
@@ -82,8 +83,21 @@ AHBSwapchainImplVK::AHBSwapchainImplVK(
     bool enable_msaa)
     : surface_control_(std::move(surface_control)), cb_(cb) {
   desc_ = android::HardwareBufferDescriptor::MakeForSwapchainImage(size);
+
+  // Log AHB swapchain configuration
+  FML_LOG(IMPORTANT) << "[AHB] Swapchain creating with size: " << size.width
+                     << "x" << size.height;
+  FML_LOG(IMPORTANT) << "[AHB] Format: " << static_cast<int>(desc_.format)
+                     << " (R8G8B8A8UNormInt="
+                     << static_cast<int>(
+                            android::HardwareBufferFormat::kR8G8B8A8UNormInt)
+                     << ")";
+  FML_LOG(IMPORTANT) << "[AHB] Pixel Format: "
+                     << PixelFormatToString(ToPixelFormat(desc_.format));
+
   pool_ = std::make_shared<AHBTexturePoolVK>(context, desc_);
   if (!pool_->IsValid()) {
+    FML_LOG(ERROR) << "[AHB] Texture pool is not valid!";
     return;
   }
   transients_ = std::make_shared<SwapchainTransientsVK>(

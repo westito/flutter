@@ -492,6 +492,8 @@ void ContextVK::Setup(Settings settings) {
   command_queue_vk_ = std::make_shared<CommandQueueVK>(weak_from_this());
   should_enable_surface_control_ = settings.enable_surface_control;
   should_batch_cmd_buffers_ = !workarounds_.batch_submit_command_buffer_timeout;
+  wide_gamut_mode_ = settings.wide_gamut_mode;
+  FML_LOG(IMPORTANT) << "[ContextVK] wide_gamut_mode=" << wide_gamut_mode_;
   is_valid_ = true;
 
   // Create the GPU Tracer later because it depends on state from
@@ -740,6 +742,10 @@ bool ContextVK::GetShouldEnableSurfaceControlSwapchain() const {
   return should_enable_surface_control_ &&
          CapabilitiesVK::Cast(*device_capabilities_)
              .SupportsExternalSemaphoreExtensions();
+}
+
+int ContextVK::GetWideGamutMode() const {
+  return wide_gamut_mode_;
 }
 
 RuntimeStageBackend ContextVK::GetRuntimeStageBackend() const {

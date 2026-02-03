@@ -723,7 +723,8 @@ static void SetThreadPriority(FlutterThreadPriority priority) {
   };
 
   flutterArguments.engine_id = reinterpret_cast<int64_t>((__bridge void*)self);
-  flutterArguments.enable_wide_gamut = _project.enableWideGamut;
+  // macOS uses 10-bit wide gamut (mode 2) when enabled.
+  flutterArguments.wide_gamut_mode = _project.enableWideGamut ? 2 : 0;
 
   BOOL mergedPlatformUIThread = YES;
   NSNumber* enableMergedPlatformUIThread =

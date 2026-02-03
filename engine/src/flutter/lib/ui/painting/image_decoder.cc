@@ -24,7 +24,7 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Make(
         runners,                            //
         std::move(concurrent_task_runner),  //
         io_manager,                         //
-        settings.enable_wide_gamut,         //
+        settings.wide_gamut_mode > 0,       //
         gpu_disabled_switch);
   }
 #endif  // IMPELLER_SUPPORTS_RENDERING

@@ -2794,9 +2794,11 @@ typedef struct {
   /// retrieve the engine instance that is running the Dart code.
   int64_t engine_id;
 
-  /// If true, the engine will decode images in wide gamut color spaces
-  /// (Display P3) when supported. If false, images are decoded to sRGB.
-  bool enable_wide_gamut;
+  /// Wide gamut color rendering mode:
+  /// 0 = disabled (sRGB)
+  /// 1 = 8-bit wide gamut (Display P3)
+  /// 2 = 10-bit wide gamut (Display P3)
+  int wide_gamut_mode;
 } FlutterProjectArgs;
 
 typedef struct {

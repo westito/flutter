@@ -59,6 +59,8 @@ public class FlutterLoader {
       "io.flutter.embedding.android.ImpellerLazyShaderInitialization";
   private static final String IMPELLER_ANTIALIAS_LINES =
       "io.flutter.embedding.android.ImpellerAntialiasLines";
+  private static final String WIDE_GAMUT_MODE_META_DATA_KEY =
+      "io.flutter.embedding.android.WideGamutMode";
 
   /**
    * Set whether leave or clean up the VM after the last shell shuts down. It can be set from app's
@@ -449,6 +451,14 @@ public class FlutterLoader {
         }
         if (metaData.getBoolean(IMPELLER_ANTIALIAS_LINES)) {
           shellArgs.add("--impeller-antialias-lines");
+        }
+        // Wide gamut mode: 0 = disabled, 1 = 8-bit P3, 2 = 10-bit P3
+        int wideGamutMode = metaData.getInt(WIDE_GAMUT_MODE_META_DATA_KEY, 0);
+        Log.d(TAG, "Wide gamut mode from manifest: " + wideGamutMode
+            + " (0=disabled, 1=8-bit P3, 2=10-bit P3)");
+        if (wideGamutMode > 0) {
+          shellArgs.add("--wide-gamut-mode=" + wideGamutMode);
+          Log.d(TAG, "Adding shell arg: --wide-gamut-mode=" + wideGamutMode);
         }
       }
 

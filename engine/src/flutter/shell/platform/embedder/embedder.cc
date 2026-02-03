@@ -2102,7 +2102,7 @@ FlutterEngineResult FlutterEngineInitialize(size_t version,
   settings.assets_path = args->assets_path;
   settings.leak_vm = !SAFE_ACCESS(args, shutdown_dart_vm_when_done, false);
   settings.old_gen_heap_size = SAFE_ACCESS(args, dart_old_gen_heap_size, -1);
-  settings.enable_wide_gamut = SAFE_ACCESS(args, enable_wide_gamut, false);
+  settings.wide_gamut_mode = SAFE_ACCESS(args, wide_gamut_mode, 0);
 
   if (!flutter::DartVM::IsRunningPrecompiledCode()) {
     // Verify the assets path contains Dart 2 kernel assets.

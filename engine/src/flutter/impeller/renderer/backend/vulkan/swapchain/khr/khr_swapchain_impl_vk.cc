@@ -4,6 +4,7 @@
 
 #include "impeller/renderer/backend/vulkan/swapchain/khr/khr_swapchain_impl_vk.h"
 
+#include "fml/logging.h"
 #include "fml/synchronization/semaphore.h"
 #include "impeller/base/validation.h"
 #include "impeller/core/formats.h"
@@ -70,11 +71,59 @@ static bool ContainsFormat(const std::vector<vk::SurfaceFormatKHR>& formats,
 
 static std::optional<vk::SurfaceFormatKHR> ChooseSurfaceFormat(
     const std::vector<vk::SurfaceFormatKHR>& formats,
-    PixelFormat preference) {
+    PixelFormat preference,
+    int wide_gamut_mode) {
+  // Log all available surface formats
+  FML_LOG(IMPORTANT) << "[KHR] Available Vulkan surface formats ("
+                     << formats.size() << "), wide_gamut_mode=" << wide_gamut_mode
+                     << ":";
+  for (const auto& fmt : formats) {
+    FML_LOG(IMPORTANT) << "[KHR]   Format: " << vk::to_string(fmt.format)
+                       << ", ColorSpace: " << vk::to_string(fmt.colorSpace);
+  }
+
+  // Wide gamut mode: 1=8-bit P3, 2=10-bit P3
+  if (wide_gamut_mode > 0) {
+    const auto p3_colorspace = vk::ColorSpaceKHR::eDisplayP3NonlinearEXT;
+
+    // Mode 2: Try 10-bit format first (A2B10G10R10)
+    if (wide_gamut_mode == 2) {
+      vk::SurfaceFormatKHR p3_10bit = {vk::Format::eA2B10G10R10UnormPack32,
+                                       p3_colorspace};
+      if (ContainsFormat(formats, p3_10bit)) {
+        FML_LOG(IMPORTANT) << "[KHR] Using 10-bit Display P3: "
+                           << vk::to_string(p3_10bit.format);
+        return p3_10bit;
+      }
+      FML_LOG(WARNING) << "[KHR] 10-bit P3 not available, falling back to 8-bit";
+    }
+
+    // Mode 1 or fallback: Try 8-bit formats with P3
+    std::vector<vk::SurfaceFormatKHR> p3_options = {
+        {vk::Format::eR8G8B8A8Unorm, p3_colorspace},
+        {vk::Format::eB8G8R8A8Unorm, p3_colorspace},
+    };
+    for (const auto& format : p3_options) {
+      if (ContainsFormat(formats, format)) {
+        FML_LOG(IMPORTANT) << "[KHR] Using 8-bit Display P3: "
+                           << vk::to_string(format.format);
+        return format;
+      }
+    }
+    FML_LOG(WARNING) << "[KHR] Display P3 not available, falling back to sRGB";
+  }
+
+  // Standard sRGB fallback
   const auto colorspace = vk::ColorSpaceKHR::eSrgbNonlinear;
   const auto vk_preference =
       vk::SurfaceFormatKHR{ToVKImageFormat(preference), colorspace};
+  FML_LOG(IMPORTANT) << "[KHR] Preferred sRGB format: "
+                     << vk::to_string(vk_preference.format)
+                     << ", ColorSpace: " << vk::to_string(vk_preference.colorSpace);
+
   if (ContainsFormat(formats, vk_preference)) {
+    FML_LOG(IMPORTANT) << "[KHR] Using preferred sRGB format: "
+                       << vk::to_string(vk_preference.format);
     return vk_preference;
   }
 
@@ -83,10 +132,14 @@ static std::optional<vk::SurfaceFormatKHR> ChooseSurfaceFormat(
       {vk::Format::eR8G8B8A8Unorm, colorspace}};
   for (const auto& format : options) {
     if (ContainsFormat(formats, format)) {
+      FML_LOG(IMPORTANT) << "[KHR] Using fallback sRGB format: "
+                         << vk::to_string(format.format)
+                         << ", ColorSpace: " << vk::to_string(format.colorSpace);
       return format;
     }
   }
 
+  FML_LOG(ERROR) << "[KHR] No suitable surface format found!";
   return std::nullopt;
 }
 
@@ -147,7 +200,8 @@ KHRSwapchainImplVK::KHRSwapchainImplVK(const std::shared_ptr<Context>& context,
   }
 
   const auto format = ChooseSurfaceFormat(
-      formats, vk_context.GetCapabilities()->GetDefaultColorFormat());
+      formats, vk_context.GetCapabilities()->GetDefaultColorFormat(),
+      vk_context.GetWideGamutMode());
   if (!format.has_value()) {
     VALIDATION_LOG << "Swapchain has no supported formats.";
     return;
@@ -196,6 +250,21 @@ KHRSwapchainImplVK::KHRSwapchainImplVK(const std::shared_ptr<Context>& context,
   // exclusive.
   swapchain_info.imageSharingMode = vk::SharingMode::eExclusive;
   swapchain_info.oldSwapchain = old_swapchain;
+
+  // Log swapchain configuration
+  FML_LOG(IMPORTANT) << "[KHR] Swapchain configuration:";
+  FML_LOG(IMPORTANT) << "[KHR]   Size: " << swapchain_info.imageExtent.width
+                     << "x" << swapchain_info.imageExtent.height;
+  FML_LOG(IMPORTANT) << "[KHR]   Format: "
+                     << vk::to_string(swapchain_info.imageFormat);
+  FML_LOG(IMPORTANT) << "[KHR]   ColorSpace: "
+                     << vk::to_string(swapchain_info.imageColorSpace);
+  FML_LOG(IMPORTANT) << "[KHR]   PresentMode: "
+                     << vk::to_string(swapchain_info.presentMode);
+  FML_LOG(IMPORTANT) << "[KHR]   CompositeAlpha: "
+                     << vk::to_string(swapchain_info.compositeAlpha);
+  FML_LOG(IMPORTANT) << "[KHR]   MinImageCount: "
+                     << swapchain_info.minImageCount;
 
   auto [swapchain_result, swapchain] =
       vk_context.GetDevice().createSwapchainKHRUnique(swapchain_info);

@@ -170,6 +170,12 @@ CapabilitiesVK::GetEnabledInstanceExtensions() const {
     }
   }
 
+  // Enable VK_EXT_swapchain_colorspace for wide gamut (Display P3) support
+  if (HasExtension("VK_EXT_swapchain_colorspace")) {
+    required.push_back("VK_EXT_swapchain_colorspace");
+    supports_swapchain_colorspace_ = true;
+  }
+
   return required;
 }
 
@@ -836,6 +842,10 @@ void CapabilitiesVK::ApplyWorkarounds(const WorkaroundsVK& workarounds) {
 
 bool CapabilitiesVK::SupportsExternalSemaphoreExtensions() const {
   return supports_external_fence_and_semaphore_;
+}
+
+bool CapabilitiesVK::SupportsSwapchainColorspace() const {
+  return supports_swapchain_colorspace_;
 }
 
 bool CapabilitiesVK::SupportsExtendedRangeFormats() const {

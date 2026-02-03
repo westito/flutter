@@ -300,6 +300,9 @@ class CapabilitiesVK final : public Capabilities,
   /// are available.
   bool SupportsExternalSemaphoreExtensions() const;
 
+  /// Whether VK_EXT_swapchain_colorspace is available for Display P3 support.
+  bool SupportsSwapchainColorspace() const;
+
   //----------------------------------------------------------------------------
   /// @brief      Get the fixed compression rate supported by the context for
   ///             the given format and usage.
@@ -341,6 +344,7 @@ class CapabilitiesVK final : public Capabilities,
   bool has_primitive_restart_ = true;
   bool has_framebuffer_fetch_ = true;
   bool supports_external_fence_and_semaphore_ = false;
+  mutable bool supports_swapchain_colorspace_ = false;
   bool is_valid_ = false;
 
   // The embedder.h API is responsible for providing the instance and device

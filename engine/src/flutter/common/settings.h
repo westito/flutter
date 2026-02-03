@@ -214,8 +214,11 @@ struct Settings {
   // manager before creating the engine.
   bool prefetched_default_font_manager = false;
 
-  // Enable the rendering of colors outside of the sRGB gamut.
-  bool enable_wide_gamut = false;
+  // Wide gamut color rendering mode:
+  // 0 = disabled (sRGB)
+  // 1 = 8-bit wide gamut (Display P3)
+  // 2 = 10-bit wide gamut (Display P3)
+  int wide_gamut_mode = 0;
 
   // Enable the Impeller renderer on supported platforms. Ignored if Impeller is
   // not supported on the platform.

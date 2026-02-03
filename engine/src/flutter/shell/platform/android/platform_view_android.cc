@@ -11,6 +11,7 @@
 
 #include "common/settings.h"
 #include "flutter/common/graphics/texture.h"
+#include "flutter/fml/logging.h"
 #include "flutter/fml/synchronization/waitable_event.h"
 #include "flutter/shell/common/shell_io_manager.h"
 #include "flutter/shell/gpu/gpu_surface_gl_delegate.h"
@@ -59,8 +60,10 @@ AndroidContext::ContextSettings CreateContextSettings(
   settings.enable_gpu_tracing = p_settings.enable_vulkan_gpu_tracing;
   settings.enable_validation = p_settings.enable_vulkan_validation;
   settings.enable_surface_control = p_settings.enable_surface_control;
+  settings.wide_gamut_mode = p_settings.wide_gamut_mode;
   settings.impeller_flags.antialiased_lines =
       p_settings.impeller_antialiased_lines;
+  FML_LOG(IMPORTANT) << "[CreateContextSettings] wide_gamut_mode=" << settings.wide_gamut_mode;
   return settings;
 }
 }  // namespace

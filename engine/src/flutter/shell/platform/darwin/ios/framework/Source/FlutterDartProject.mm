@@ -159,17 +159,18 @@ flutter::Settings FLTDefaultSettingsForBundle(NSBundle* bundle, NSProcessInfo* p
   settings.domain_network_policy = "";
 
   // Whether to enable wide gamut colors.
+  // iOS uses 10-bit wide gamut (mode 2) when enabled.
 #if TARGET_OS_SIMULATOR
   // As of Xcode 14.1, the wide gamut surface pixel formats are not supported by
   // the simulator.
-  settings.enable_wide_gamut = false;
+  settings.wide_gamut_mode = 0;
   // Removes unused function warning.
   (void)DoesHardwareSupportWideGamut;
 #else
   NSNumber* nsEnableWideGamut = [mainBundle objectForInfoDictionaryKey:@"FLTEnableWideGamut"];
   BOOL enableWideGamut =
       (nsEnableWideGamut ? nsEnableWideGamut.boolValue : YES) && DoesHardwareSupportWideGamut();
-  settings.enable_wide_gamut = enableWideGamut;
+  settings.wide_gamut_mode = enableWideGamut ? 2 : 0;
 #endif
 
   NSNumber* nsAntialiasLines = [mainBundle objectForInfoDictionaryKey:@"FLTAntialiasLines"];
@@ -416,7 +417,7 @@ flutter::Settings FLTDefaultSettingsForBundle(NSBundle* bundle, NSProcessInfo* p
 }
 
 - (BOOL)isWideGamutEnabled {
-  return _settings.enable_wide_gamut;
+  return _settings.wide_gamut_mode > 0;
 }
 
 @end

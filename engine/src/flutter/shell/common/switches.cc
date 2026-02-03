@@ -557,6 +557,15 @@ Settings SettingsFromCommandLine(const fml::CommandLine& command_line,
   settings.impeller_antialiased_lines =
       command_line.HasOption(FlagForSwitch(Switch::ImpellerAntialiasLines));
 
+  // Wide gamut mode: 0=disabled, 1=8-bit P3, 2=10-bit P3
+  if (command_line.HasOption(FlagForSwitch(Switch::WideGamutMode))) {
+    std::string wide_gamut_mode_str;
+    command_line.GetOptionValue(FlagForSwitch(Switch::WideGamutMode),
+                                &wide_gamut_mode_str);
+    settings.wide_gamut_mode = std::stoi(wide_gamut_mode_str);
+    FML_LOG(IMPORTANT) << "[switches] Parsed wide_gamut_mode=" << settings.wide_gamut_mode;
+  }
+
   return settings;
 }
 

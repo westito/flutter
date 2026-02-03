@@ -35,6 +35,32 @@ import io.flutter.embedding.engine.renderer.RenderSurface;
 public class FlutterSurfaceView extends SurfaceView implements RenderSurface {
   private static final String TAG = "FlutterSurfaceView";
 
+  /** Convert PixelFormat constant to readable string for logging. */
+  private static String formatToString(int format) {
+    switch (format) {
+      case PixelFormat.RGBA_8888:
+        return "RGBA_8888";
+      case PixelFormat.RGBX_8888:
+        return "RGBX_8888";
+      case PixelFormat.RGB_888:
+        return "RGB_888";
+      case PixelFormat.RGB_565:
+        return "RGB_565";
+      case PixelFormat.RGBA_F16:
+        return "RGBA_F16";
+      case PixelFormat.RGBA_1010102:
+        return "RGBA_1010102";
+      case PixelFormat.TRANSPARENT:
+        return "TRANSPARENT";
+      case PixelFormat.TRANSLUCENT:
+        return "TRANSLUCENT";
+      case PixelFormat.OPAQUE:
+        return "OPAQUE";
+      default:
+        return "UNKNOWN";
+    }
+  }
+
   private final boolean renderTransparently;
   private boolean isSurfaceAvailableForRendering = false;
   private boolean isPaused = false;
@@ -67,6 +93,8 @@ public class FlutterSurfaceView extends SurfaceView implements RenderSurface {
         public void surfaceChanged(
             @NonNull SurfaceHolder holder, int format, int width, int height) {
           Log.v(TAG, "SurfaceHolder.Callback.surfaceChanged()");
+          Log.d(TAG, "Surface format: " + formatToString(format) + " (" + format + ")");
+          Log.d(TAG, "Surface size: " + width + "x" + height);
           if (shouldNotify()) {
             changeSurfaceSize(width, height);
           }

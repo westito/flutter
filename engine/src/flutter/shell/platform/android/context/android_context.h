@@ -34,6 +34,7 @@ class AndroidContext {
     bool enable_gpu_tracing = false;
     bool enable_surface_control = false;
     bool quiet = false;
+    int wide_gamut_mode = 0;  // 0=disabled, 1=8-bit P3, 2=10-bit P3
     impeller::Flags impeller_flags;
   };
 

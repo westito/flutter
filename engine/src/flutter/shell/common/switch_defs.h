@@ -297,6 +297,9 @@ DEF_SWITCH(ImpellerLazyShaderMode,
 DEF_SWITCH(ImpellerAntialiasLines,
            "impeller-antialias-lines",
            "Experimental flag to test drawing lines with antialiasing.")
+DEF_SWITCH(WideGamutMode,
+           "wide-gamut-mode",
+           "Wide gamut color rendering mode: 0=disabled, 1=8-bit P3, 2=10-bit P3.")
 DEF_SWITCHES_END
 
 }  // namespace flutter

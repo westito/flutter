@@ -85,6 +85,8 @@ class ContextVK final : public Context,
     bool enable_surface_control = false;
     /// If validations are requested but cannot be enabled, log a fatal error.
     bool fatal_missing_validations = false;
+    /// Wide gamut mode: 0=disabled, 1=8-bit P3, 2=10-bit P3
+    int wide_gamut_mode = 0;
     Flags flags;
 
     std::optional<EmbedderData> embedder_data;
@@ -231,6 +233,9 @@ class ContextVK final : public Context,
   ///        enabled
   bool GetShouldEnableSurfaceControlSwapchain() const;
 
+  /// @brief Get the wide gamut mode (0=disabled, 1=8-bit P3, 2=10-bit P3)
+  int GetWideGamutMode() const;
+
   // | Context |
   bool EnqueueCommandBuffer(
       std::shared_ptr<CommandBuffer> command_buffer) override;
@@ -295,6 +300,7 @@ class ContextVK final : public Context,
       cached_descriptor_pool_;
   bool should_enable_surface_control_ = false;
   bool should_batch_cmd_buffers_ = false;
+  int wide_gamut_mode_ = 0;
   std::vector<std::shared_ptr<CommandBuffer>> pending_command_buffers_;
 
   const uint64_t hash_;

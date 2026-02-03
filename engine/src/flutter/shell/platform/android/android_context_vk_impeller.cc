@@ -49,7 +49,9 @@ static std::shared_ptr<impeller::Context> CreateImpellerContext(
   settings.enable_validation = p_settings.enable_validation;
   settings.enable_gpu_tracing = p_settings.enable_gpu_tracing;
   settings.enable_surface_control = p_settings.enable_surface_control;
+  settings.wide_gamut_mode = p_settings.wide_gamut_mode;
   settings.flags = p_settings.impeller_flags;
+  FML_LOG(IMPORTANT) << "[android_context_vk] wide_gamut_mode=" << settings.wide_gamut_mode;
 
   auto context = impeller::ContextVK::Create(std::move(settings));
 
