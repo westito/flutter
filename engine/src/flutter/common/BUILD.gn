@@ -11,6 +11,8 @@ config("flutter_config") {
 source_set("common") {
   sources = [
     "macros.h",
+    "platform_font_scale.cc",
+    "platform_font_scale.h",
     "settings.cc",
     "settings.h",
     "task_runners.cc",

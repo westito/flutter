@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "flutter/shell/platform/linux/fl_display_monitor.h"
+#include "flutter/common/platform_font_scale.h"
 #include "flutter/shell/platform/linux/fl_engine_private.h"
 
 struct _FlDisplayMonitor {
@@ -22,6 +23,31 @@ struct _FlDisplayMonitor {
 };
 
 G_DEFINE_TYPE(FlDisplayMonitor, fl_display_monitor, G_TYPE_OBJECT)
+
+// Points per inch — fixed typographic constant.
+static constexpr gdouble kPointsPerInch = 72.0;
+
+// Default screen DPI on Linux when GDK reports -1 (unset).
+static constexpr gdouble kDefaultDpi = 96.0;
+
+// Update the platform font scale from the GDK screen resolution.
+// GTK/Pango interprets font sizes as typographic points (1pt = DPI/72 px),
+// while Flutter uses logical pixels.  Scaling by DPI/72 makes fontSize: N
+// in Dart render at the same visual size as Npt in native GTK apps.
+static void update_font_scale_from_screen(GdkScreen* screen) {
+  gdouble dpi = gdk_screen_get_resolution(screen);
+  if (dpi <= 0) {
+    dpi = kDefaultDpi;
+  }
+  flutter::SetPlatformFontScale(dpi / kPointsPerInch);
+}
+
+// Called when GdkScreen "notify::resolution" fires (DPI changed).
+static void screen_resolution_changed_cb(GdkScreen* screen,
+                                         GParamSpec* /*pspec*/,
+                                         gpointer /*user_data*/) {
+  update_font_scale_from_screen(screen);
+}
 
 // Send the current monitor state to the engine.
 static void notify_display_update(FlDisplayMonitor* self) {
@@ -109,6 +135,13 @@ void fl_display_monitor_start(FlDisplayMonitor* self) {
   g_signal_connect_object(self->display, "monitor-removed",
                           G_CALLBACK(monitor_removed_cb), self,
                           G_CONNECT_SWAPPED);
+
+  // Set platform font scale from screen DPI and monitor for changes.
+  GdkScreen* screen = gdk_display_get_default_screen(self->display);
+  update_font_scale_from_screen(screen);
+  g_signal_connect(screen, "notify::resolution",
+                   G_CALLBACK(screen_resolution_changed_cb), nullptr);
+
   notify_display_update(self);
 }
 

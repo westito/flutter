@@ -183,6 +183,7 @@ source_set("flutter_linux_sources") {
 
   deps = [
     "$dart_src/runtime:dart_api",
+    "//flutter/common",
     "//flutter/fml",
     "//flutter/shell/platform/common:common_cpp_enums",
     "//flutter/shell/platform/common:common_cpp_input",

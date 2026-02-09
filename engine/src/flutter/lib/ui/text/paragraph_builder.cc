@@ -6,6 +6,7 @@
 
 #include <cstring>
 
+#include "flutter/common/platform_font_scale.h"
 #include "flutter/common/settings.h"
 #include "flutter/common/task_runners.h"
 #include "flutter/fml/logging.h"
@@ -258,7 +259,7 @@ ParagraphBuilder::ParagraphBuilder(
     }
 
     if (mask & kPSFontSizeMask) {
-      style.font_size = fontSize;
+      style.font_size = fontSize * GetPlatformFontScale();
     }
 
     if (mask & kPSHeightMask) {
@@ -425,7 +426,7 @@ void ParagraphBuilder::pushStyle(const tonic::Int32List& encoded,
     }
 
     if (mask & kTSFontSizeMask) {
-      style.font_size = fontSize;
+      style.font_size = fontSize * GetPlatformFontScale();
     }
 
     if (mask & kTSLetterSpacingMask) {
