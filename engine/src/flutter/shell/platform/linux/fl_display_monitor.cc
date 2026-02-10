@@ -30,23 +30,14 @@ static constexpr gdouble kPointsPerInch = 72.0;
 // Default screen DPI on Linux when GDK reports -1 (unset).
 static constexpr gdouble kDefaultDpi = 96.0;
 
-// Update the platform font scale from the GDK screen resolution.
-// GTK/Pango interprets font sizes as typographic points (1pt = DPI/72 px),
-// while Flutter uses logical pixels.  Scaling by DPI/72 makes fontSize: N
-// in Dart render at the same visual size as Npt in native GTK apps.
-static void update_font_scale_from_screen(GdkScreen* screen) {
-  gdouble dpi = gdk_screen_get_resolution(screen);
-  if (dpi <= 0) {
-    dpi = kDefaultDpi;
-  }
-  flutter::SetPlatformFontScale(dpi / kPointsPerInch);
-}
-
-// Called when GdkScreen "notify::resolution" fires (DPI changed).
-static void screen_resolution_changed_cb(GdkScreen* screen,
-                                         GParamSpec* /*pspec*/,
-                                         gpointer /*user_data*/) {
-  update_font_scale_from_screen(screen);
+// Set a fixed platform font scale to convert typographic points to logical
+// pixels: 1pt = 1/72 inch, 1 logical pixel = 1/96 inch, so the constant
+// scale is 96/72.  The user's text-scaling-factor preference is handled
+// separately by the Flutter framework via textScaleFactor from the
+// flutter/settings channel, so we intentionally do NOT fold
+// gdk_screen_get_resolution() into this value (that would double-scale).
+static void set_fixed_font_scale() {
+  flutter::SetPlatformFontScale(kDefaultDpi / kPointsPerInch);
 }
 
 // Send the current monitor state to the engine.
@@ -136,11 +127,8 @@ void fl_display_monitor_start(FlDisplayMonitor* self) {
                           G_CALLBACK(monitor_removed_cb), self,
                           G_CONNECT_SWAPPED);
 
-  // Set platform font scale from screen DPI and monitor for changes.
-  GdkScreen* screen = gdk_display_get_default_screen(self->display);
-  update_font_scale_from_screen(screen);
-  g_signal_connect(screen, "notify::resolution",
-                   G_CALLBACK(screen_resolution_changed_cb), nullptr);
+  // Convert typographic points to logical pixels (fixed 96/72 ratio).
+  set_fixed_font_scale();
 
   notify_display_update(self);
 }
