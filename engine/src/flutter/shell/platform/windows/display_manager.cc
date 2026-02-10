@@ -20,22 +20,15 @@ struct MonitorEnumState {
   std::vector<FlutterEngineDisplay>* displays;
 };
 
-// Points per inch - fixed typographic constant.
-constexpr double kPointsPerInch = 72.0;
-
-// Update the platform font scale from the primary monitor's DPI.
-// Windows GDI interprets font sizes as typographic points (1pt = DPI/72 px),
-// while Flutter uses logical pixels. Scaling by DPI/72 makes fontSize: N
-// in Dart render at the same visual size as Npt in native Windows apps.
-void UpdatePlatformFontScale() {
-  UINT dpi = GetDpiForMonitor(nullptr);
-  SetPlatformFontScale(static_cast<double>(dpi) / kPointsPerInch);
-}
-
 }  // namespace
 
 DisplayManagerWin32::DisplayManagerWin32(FlutterWindowsEngine* engine)
-    : engine_(engine), win32_(engine->windows_proc_table()) {}
+    : engine_(engine), win32_(engine->windows_proc_table()) {
+  // Convert typographic points to logical pixels: 1pt = 1/72 inch,
+  // 1 logical pixel = 1/96 inch, so the constant scale is 96/72.
+  // Flutter's device_pixel_ratio handles DPI scaling separately.
+  SetPlatformFontScale(96.0 / 72.0);
+}
 
 DisplayManagerWin32::~DisplayManagerWin32() = default;
 
@@ -88,7 +81,6 @@ BOOL CALLBACK DisplayManagerWin32::EnumMonitorCallback(HMONITOR monitor,
 }
 
 void DisplayManagerWin32::UpdateDisplays() {
-  UpdatePlatformFontScale();
   auto displays = GetDisplays();
   engine_->UpdateDisplay(displays);
 }
